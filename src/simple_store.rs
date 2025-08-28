@@ -4,6 +4,7 @@ use std::marker::{Send, Sync};
 use std::time::Duration;
 use std::{path::PathBuf, sync::Arc};
 use tokio::time::sleep;
+use tracing::error;
 
 /// Exposes a thread-safe store that loads itself on initalization
 /// (if it exists) and can be refreshed on demand. When refreshed
@@ -109,12 +110,12 @@ impl<T: Send + Sync + 'static> Store<T> {
         tokio::spawn(async move {
             loop {
                 sleep(between).await;
-                if let Err(_e) = mvfetch
+                if let Err(e) = mvfetch
                     .fetch(Some(mvstore.clone()))
                     .await
                     .and_then(|v| mvstore.write(v))
                 {
-                    todo!()
+                    error!("Failed to update database: {}", e);
                 }
             }
         });
@@ -123,6 +124,7 @@ impl<T: Send + Sync + 'static> Store<T> {
 
 #[cfg(test)]
 mod tests {
+    /// Example of how to use this module
     use super::*;
 
     #[derive(Default)]
@@ -136,14 +138,14 @@ mod tests {
         fn try_from(_value: Vec<u8>) -> Result<Self, Self::Error> {
             // serde_json::from_slice(&value) --- for example
             // Likely bincode options, etc
-            todo!()
+            unimplemented!()
         }
     }
 
     impl<'a> From<&'a MyData> for Vec<u8> {
         fn from(_value: &'a MyData) -> Self {
             // serde_json::to_vec(&value) --- for example
-            todo!()
+            unimplemented!()
         }
     }
 
@@ -153,7 +155,7 @@ mod tests {
     #[async_trait]
     impl Fetcher<MyData> for DataFetcher {
         async fn fetch(&self, _store: Option<Store<MyData>>) -> Result<MyData, anyhow::Error> {
-            todo!()
+            unimplemented!()
         }
     }
 
