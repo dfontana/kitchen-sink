@@ -17,7 +17,7 @@ pub struct ActorHandle<T: Clone> {
 
 impl<T: Clone + Send + Sync + 'static> ActorHandle<T> {
     pub fn spawn(
-        mk_actor: impl Fn(Receiver<T>, ActorHandle<T>) -> Box<dyn Actor<T> + Send + Sync>,
+        mk_actor: impl FnOnce(Receiver<T>, ActorHandle<T>) -> Box<dyn Actor<T> + Send + Sync>,
         shutdown: &mut ShutdownCoordinator,
     ) -> Self {
         let (sender, receiver) = mpsc::channel(8);
